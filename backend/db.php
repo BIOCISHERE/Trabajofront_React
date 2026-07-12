@@ -3,7 +3,7 @@
 $host = "localhost";
 $user = "root";     // usuario por defecto en MAMP
 $pass = "root";     // contraseña por defecto en MAMP
-$dbname = "mi_base"; // nombre de tu base en phpMyAdmin
+$dbname = "pnks"; // nombre de tu base en phpMyAdmin
 
 $conn = new mysqli($host, $user, $pass, $dbname);
 
