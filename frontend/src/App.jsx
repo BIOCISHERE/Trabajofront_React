@@ -33,12 +33,12 @@ function App() {
 
                         <div className="collapse navbar-collapse justify-content-end" id="navbarPNK">
                             <div className="navbar-nav align-items-center gap-2">
-                                <a className="nav-link btn-nav-pnk" href="#registrarpro">
+                                <Link className="nav-link btn-nav-pnk" to="/registrarpropietario">
                                     Registrar Propietario
-                                </a>
-                                <a className="nav-link btn-nav-pnk" href="#registrofreelance">
+                                </Link>
+                                <Link className="nav-link btn-nav-pnk" to="/registrarfreelance">
                                     Registrar Gestor Freelance
-                                </a>
+                                </Link>
                                 <a className="nav-link btn-nav-pnk" href="#contacto">
                                     Contacto
                                 </a>
