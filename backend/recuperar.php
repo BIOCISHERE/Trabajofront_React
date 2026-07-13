@@ -33,7 +33,12 @@ function generarCodigo($longitud = 10)
     return str_shuffle($codigo);
 }
 
-$email = $_POST['email'] ?? '';
+$email = trim($_POST['email'] ?? '');
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(["status" => "error", "message" => "Correo inválido"]);
+    exit;
+}
 
 $sql = "SELECT * FROM usuarios WHERE email = ?";
 $stmt = $conn->prepare($sql);
@@ -58,14 +63,16 @@ if ($result->num_rows > 0) {
     try {
         // Configuración SMTP (reemplaza mail() local, que no funciona sin sendmail)
         $mail->isSMTP();
-        $mail->Host       = 'smtp.gmail.com';
+        $mail->Host       = getenv('SMTP_HOST') ?: 'smtp.gmail.com';
         $mail->SMTPAuth   = true;
-        $mail->Username   = 'sebav854@gmail.com';        // tu correo de Gmail
-        $mail->Password   = 'iiqs wsrg cqyb mhta';        // App Password de Google (16 caracteres)
+        $mail->Username   = getenv('SMTP_USERNAME') ?: 'sebav854@gmail.com';
+        $mail->Password   = getenv('SMTP_PASSWORD') ?: 'iiqs wsrg cqyb mhta';
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port       = 587;
+        $mail->Port       = getenv('SMTP_PORT') ?: 587;
+        $mail->CharSet    = 'UTF-8';
+        $mail->Encoding   = PHPMailer::ENCODING_BASE64;
 
-        $mail->setFrom('tucorreo@gmail.com', 'Recuperar Contraseña');
+        $mail->setFrom(getenv('SMTP_FROM') ?: 'tucorreo@gmail.com', getenv('SMTP_FROM_NAME') ?: 'Recuperar Contraseña');
         $mail->addAddress($email);
         $mail->Subject = "Código de recuperación";
         $mail->Body = "Tu código de recuperación es: $codigo";

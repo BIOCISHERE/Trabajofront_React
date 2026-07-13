@@ -124,7 +124,11 @@ function RecuperarContrasena() {
 
         setCargando(true);
         try {
-            const body = new URLSearchParams({ email: correo.trim(), nuevaClave });
+            const body = new URLSearchParams({
+                email: correo.trim(),
+                codigo: codigo.trim(),
+                nuevaClave,
+            });
             const res = await fetch(`${API_URL}/cambiarclave.php`, { method: "POST", body });
             const data = await res.json();
 
@@ -203,8 +207,7 @@ function RecuperarContrasena() {
                                     <>
                                         <h1 className="form-title">Verifica tu código</h1>
                                         <p className="form-subtitle">
-                                            Ingresa el código de 12 caracteres que enviamos a{" "}
-                                            <strong>{correo}</strong>
+                                            Ingresa el código de 12 caracteres que enviamos a <strong>{correo}</strong>
                                         </p>
                                         <form onSubmit={handleValidarCodigo}>
                                             <div className="mb-3">

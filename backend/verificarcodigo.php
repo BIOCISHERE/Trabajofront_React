@@ -3,11 +3,16 @@
 require "cors.php";
 include "db.php";
 
-$email = $_POST['email'] ?? '';
-$codigo = $_POST['codigo'] ?? '';
+$email = trim($_POST['email'] ?? '');
+$codigo = trim($_POST['codigo'] ?? '');
 
 if (empty($email) || empty($codigo)) {
     echo json_encode(["status" => "error", "message" => "Datos incompletos"]);
+    exit;
+}
+
+if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    echo json_encode(["status" => "error", "message" => "Correo inválido"]);
     exit;
 }
 
