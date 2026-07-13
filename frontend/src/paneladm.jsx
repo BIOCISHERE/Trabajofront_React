@@ -1,10 +1,32 @@
 // src/components/AdminPanel.jsx
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 
 // 👇 Importamos el logo desde la carpeta assets
 import logoInmobiliaria from "./assets/PNKINMOBILIARIA-removebg-preview.png";
 
 function AdminPanel() {
+    const navigate = useNavigate();
+    const [usuario, setUsuario] = useState(null);
+
+    // Protegemos la ruta: si no hay sesión guardada, mandamos al home
+    useEffect(() => {
+        const guardado = localStorage.getItem("pnk_usuario");
+        if (!guardado) {
+            navigate("/");
+            return;
+        }
+        setUsuario(JSON.parse(guardado));
+    }, [navigate]);
+
+    const handleCerrarSesion = () => {
+        localStorage.removeItem("pnk_usuario");
+        navigate("/");
+    };
+
+    // Mientras se valida la sesión no mostramos el contenido
+    if (!usuario) return null;
+
     return (
         <div className="d-flex flex-column min-vh-100">
             {/* NAVBAR */}
@@ -28,18 +50,25 @@ function AdminPanel() {
                         </div>
                         <div className="welcome-info">
                             <p className="welcome-label m-0">Bienvenido:</p>
-                            <p className="welcome-name m-0">Miguel Burgos</p>
+                            <p className="welcome-name m-0">{usuario.nombre_completo}</p>
+                            <p className="welcome-label m-0" style={{ fontSize: "0.75rem" }}>
+                                {usuario.tipo_usuario}
+                            </p>
                         </div>
                     </div>
-                    {/* Redirección al Home al cerrar sesión */}
-                    <Link to="/" className="btn-cerrar-sesion">
+                    {/* Cierra sesión y redirige al Home */}
+                    <button
+                        onClick={handleCerrarSesion}
+                        className="btn-cerrar-sesion"
+                        style={{ border: "none", background: "transparent" }}
+                    >
                         <svg viewBox="0 0 24 24">
                             <path d="M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" />
                             <polyline points="16 17 21 12 16 7" />
                             <line x1="21" y1="12" x2="9" y2="12" />
                         </svg>
                         Cerrar Sesión
-                    </Link>
+                    </button>
                 </div>
 
                 <p className="section-title">Módulos</p>

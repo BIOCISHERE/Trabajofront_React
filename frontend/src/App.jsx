@@ -5,9 +5,105 @@ import carrouselCasa from "./assets/carrousel_casa.jpeg";
 import carrouselDept from "./assets/carrousel_dept.jpeg";
 import carrouselPiscina from "./assets/carrousel_piscina.jpeg";
 import ejemploPropiedad from "./assets/ejemplo_propiedad.webp";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import Swal from "sweetalert2";
+import { API_URL } from "./config";
 
 function App() {
+    const navigate = useNavigate();
+
+    const [email, setEmail] = useState("");
+    const [pwd, setPwd] = useState("");
+    const [remember, setRemember] = useState(false);
+    const [cargando, setCargando] = useState(false);
+
+    // Si el usuario marcó "recordar credenciales" antes, precargamos el email
+    useEffect(() => {
+        const emailGuardado = localStorage.getItem("pnk_remember_email");
+        if (emailGuardado) {
+            setEmail(emailGuardado);
+            setRemember(true);
+        }
+    }, []);
+
+    const handleLogin = async (e) => {
+        e.preventDefault();
+
+        // Validaciones básicas antes de llamar al backend
+        if (!email.trim() || !pwd.trim()) {
+            Swal.fire({
+                icon: "warning",
+                title: "Campos incompletos",
+                text: "Debes ingresar tu email y tu contraseña.",
+                confirmButtonColor: "#0d6efd",
+            });
+            return;
+        }
+
+        const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim());
+        if (!emailValido) {
+            Swal.fire({
+                icon: "warning",
+                title: "Email inválido",
+                text: "Ingresa un correo electrónico con un formato válido.",
+                confirmButtonColor: "#0d6efd",
+            });
+            return;
+        }
+
+        setCargando(true);
+        try {
+            const body = new URLSearchParams({ email: email.trim(), clave: pwd });
+            const res = await fetch(`${API_URL}/login.php`, {
+                method: "POST",
+                body,
+            });
+
+            const data = await res.json();
+
+            if (data.status === "ok") {
+                // Guardamos la sesión del usuario en el navegador
+                localStorage.setItem("pnk_usuario", JSON.stringify(data.usuario));
+
+                if (remember) {
+                    localStorage.setItem("pnk_remember_email", email.trim());
+                } else {
+                    localStorage.removeItem("pnk_remember_email");
+                }
+
+                await Swal.fire({
+                    icon: "success",
+                    title: "¡Bienvenido!",
+                    text: `Hola, ${data.usuario.nombre_completo}`,
+                    timer: 1500,
+                    showConfirmButton: false,
+                });
+
+                // Por ahora todos los perfiles van al panel; cuando existan
+                // vistas propias para Propietario / Gestor, se puede
+                // condicionar por data.usuario.tipo_usuario aquí.
+                navigate("/paneladmin");
+            } else {
+                Swal.fire({
+                    icon: "error",
+                    title: "No se pudo iniciar sesión",
+                    text: data.message || "Correo o contraseña incorrectos",
+                    confirmButtonColor: "#0d6efd",
+                });
+            }
+        } catch (error) {
+            Swal.fire({
+                icon: "error",
+                title: "Error de conexión",
+                text: "No se pudo contactar al servidor. Verifica que el backend esté corriendo.",
+                confirmButtonColor: "#0d6efd",
+            });
+        } finally {
+            setCargando(false);
+        }
+    };
+
     return (
         <>
             <div className="container-fluid p-0">
@@ -97,7 +193,7 @@ function App() {
                                 <div className="row">
                                     <div className="col-10 col-md-8 mx-auto">
                                         <legend className="text-center mb-4">Autenticación</legend>
-                                        <form onSubmit={(e) => e.preventDefault()} autoComplete="on">
+                                        <form onSubmit={handleLogin} autoComplete="on">
                                             <div className="mb-3">
                                                 <label htmlFor="email" className="form-label">
                                                     Email:
@@ -109,6 +205,8 @@ function App() {
                                                     placeholder="Ingresa tu email"
                                                     name="email"
                                                     autoComplete="on"
+                                                    value={email}
+                                                    onChange={(e) => setEmail(e.target.value)}
                                                 />
                                             </div>
                                             <div className="mb-3">
@@ -121,6 +219,8 @@ function App() {
                                                     id="pwd"
                                                     placeholder="Ingresa tu contraseña"
                                                     name="pswd"
+                                                    value={pwd}
+                                                    onChange={(e) => setPwd(e.target.value)}
                                                 />
                                                 <p style={{ fontSize: "0.85rem" }}>
                                                     ¿Olvidaste tu contraseña? -{" "}
@@ -133,6 +233,8 @@ function App() {
                                                         className="form-check-input"
                                                         type="checkbox"
                                                         name="remember"
+                                                        checked={remember}
+                                                        onChange={(e) => setRemember(e.target.checked)}
                                                     />{" "}
                                                     Recordar credenciales
                                                 </label>
@@ -141,8 +243,9 @@ function App() {
                                                 <button
                                                     type="submit"
                                                     className="btn btn-ingresar w-100 text-decoration-none"
+                                                    disabled={cargando}
                                                 >
-                                                    Ingresar
+                                                    {cargando ? "Ingresando..." : "Ingresar"}
                                                 </button>
                                             </div>
                                         </form>
