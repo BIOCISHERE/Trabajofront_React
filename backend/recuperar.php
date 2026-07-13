@@ -56,8 +56,16 @@ if ($result->num_rows > 0) {
     // Enviar correo
     $mail = new PHPMailer(true);
     try {
-        $mail->isMail(); // usa mail() local
-        $mail->setFrom("no-reply@pnks.local", "Recuperar Contraseña");
+        // Configuración SMTP (reemplaza mail() local, que no funciona sin sendmail)
+        $mail->isSMTP();
+        $mail->Host       = 'smtp.gmail.com';
+        $mail->SMTPAuth   = true;
+        $mail->Username   = 'sebav854@gmail.com';        // tu correo de Gmail
+        $mail->Password   = 'iiqs wsrg cqyb mhta';        // App Password de Google (16 caracteres)
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port       = 587;
+
+        $mail->setFrom('tucorreo@gmail.com', 'Recuperar Contraseña');
         $mail->addAddress($email);
         $mail->Subject = "Código de recuperación";
         $mail->Body = "Tu código de recuperación es: $codigo";
